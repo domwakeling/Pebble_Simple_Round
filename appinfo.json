@@ -1,0 +1,29 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "dominic.wakeling@btinternet.com",
+    "longName": "Simple Round",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "characterRegex": "[0-9 ]",
+                "file": "fonts/Arial.ttf",
+                "name": "FONT_ARIAL_12",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Simple Round",
+    "targetPlatforms": [
+        "basalt"
+    ],
+    "uuid": "5c989111-4500-421b-8d68-aa27158fc15a",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
