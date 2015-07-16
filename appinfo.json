@@ -9,9 +9,14 @@
     "resources": {
         "media": [
             {
+                "file": "images/dial.png",
+                "name": "DIAL",
+                "type": "png"
+            },
+            {
                 "characterRegex": "[0-9 ]",
-                "file": "fonts/Arial.ttf",
-                "name": "FONT_ARIAL_12",
+                "file": "fonts/OpenSans-Regular.ttf",
+                "name": "FONT_EUROSTILE_13",
                 "type": "font"
             }
         ]
