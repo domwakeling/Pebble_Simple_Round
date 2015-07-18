@@ -9,15 +9,15 @@
     "resources": {
         "media": [
             {
+                "characterRegex": "[0-9 A-Z]",
+                "file": "fonts/Helvetica.ttf",
+                "name": "FONT_HELVETICA_18",
+                "type": "font"
+            },
+            {
                 "file": "images/dial.png",
                 "name": "DIAL",
                 "type": "png"
-            },
-            {
-                "characterRegex": "[0-9 ]",
-                "file": "fonts/OpenSans-Regular.ttf",
-                "name": "FONT_EUROSTILE_13",
-                "type": "font"
             }
         ]
     },
