@@ -13,6 +13,7 @@
 #define MN_STROKE 3
 #define MN_COLOUR GColorBlack
 #define SEC_LENGTH 60
+#define SEC_LENGTH_TAIL 15
 #define SEC_STROKE 1
 #define SEC_COLOUR GColorRed
 #define MAX_HR 12
@@ -20,7 +21,8 @@
 #define MAX_SEC 60
 #define MAX_DEG 360
 #define MIN_REF 3								// how many times per minute the minute hand refreshes
-#define POM_RAD 3
+#define POM_RAD_B 4
+#define POM_RAD_R 2
 #define TEXT_Y 145
 #define TEXT_X 4
 #define TEXT_COLOUR GColorWhite
@@ -30,7 +32,7 @@ int minutes_angle = -1;
 int seconds;
 
 Window *main_window;
-Layer *hour_l, *minute_l, *second_l, *pommel_l;
+Layer *hour_l, *minute_l, *second_l, *pommel_l_r, *pommel_l_b;
 TextLayer *date_text, *month_text;
 GPath *hour_p, *minute_p, *second_p;
 GBitmap *dial_map;
@@ -38,6 +40,7 @@ GFont *helvetica;
 BitmapLayer *dial_layer;
 char date_buffer[] = "00";
 char month_buffer[] = "JUN";
+bool showing_date = false;
 
 GPathInfo hour_hand_info = {
 	.num_points = 2,
@@ -51,7 +54,7 @@ GPathInfo minute_hand_info = {
 
 GPathInfo second_hand_info = {
 	.num_points = 2,
-	.points = (GPoint[]) { {OR_X , OR_Y - SEC_LENGTH} , {OR_X, OR_Y} }
+	.points = (GPoint[]) { {OR_X , OR_Y - SEC_LENGTH} , {OR_X, OR_Y + SEC_LENGTH_TAIL} }
 };
 
 void gpath_rotate_and_move(GPath *p, int degs) {
@@ -88,11 +91,18 @@ void second_update_proc(Layer *l, GContext *ctx) {
 	gpath_draw_outline_open(ctx, second_p);
 }
 
-void pommel_update_proc(Layer *l, GContext *ctx) {
+void pommel_b_update_proc(Layer *l, GContext *ctx) {
+	graphics_context_set_stroke_color(ctx, MN_COLOUR);
+	graphics_context_set_fill_color(ctx, MN_COLOUR);
+	graphics_fill_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD_B);
+	graphics_draw_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD_B);
+}
+
+void pommel_r_update_proc(Layer *l, GContext *ctx) {
 	graphics_context_set_stroke_color(ctx, SEC_COLOUR);
 	graphics_context_set_fill_color(ctx, SEC_COLOUR);
-	graphics_fill_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD);
-	graphics_draw_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD);
+	graphics_fill_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD_R);
+	graphics_draw_circle(ctx, GPoint(ROT_X, ROT_Y), POM_RAD_R);
 }
 
 void update_time() {
@@ -120,8 +130,13 @@ void update_time() {
 		}
 		
 		// set the layers
-		text_layer_set_text(date_text, date_buffer);
-		text_layer_set_text(month_text, month_buffer);		
+		if(showing_date) {
+			text_layer_set_text(date_text, date_buffer);
+			text_layer_set_text(month_text, month_buffer);
+		} else {
+			text_layer_set_text(date_text, "");
+			text_layer_set_text(month_text, "");
+		}
 	}
 	
 	// draw the hours hand if necessary
@@ -151,11 +166,12 @@ void main_window_load(Window *w) {
 	dial_layer = bitmap_layer_create(r);
 	hour_l = layer_create(r);
 	minute_l = layer_create(r);
+	pommel_l_b = layer_create(r);
 	second_l = layer_create(r);
-	pommel_l = layer_create(r);
+	pommel_l_r = layer_create(r);
 	
 	// load custom font
-	helvetica = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_HELVETICA_18));
+	helvetica = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_HELVETICA_16));
 	
 	// create text layers
 	GRect fr = GRect(TEXT_X, TEXT_Y, W_WIDTH - 2*TEXT_X, W_HEIGHT - TEXT_Y);
@@ -181,7 +197,8 @@ void main_window_load(Window *w) {
 	layer_set_update_proc(hour_l, hour_update_proc);
 	layer_set_update_proc(minute_l, minute_update_proc);
 	layer_set_update_proc(second_l, second_update_proc);
-	layer_set_update_proc(pommel_l, pommel_update_proc);
+	layer_set_update_proc(pommel_l_b, pommel_b_update_proc);
+	layer_set_update_proc(pommel_l_r, pommel_r_update_proc);
 	
 	// create the bitmap and set the bitmap layer
 	dial_map = gbitmap_create_with_resource(RESOURCE_ID_DIAL);
@@ -192,8 +209,9 @@ void main_window_load(Window *w) {
 	layer_add_child(w_layer, (Layer *)dial_layer);
 	layer_add_child(w_layer, hour_l);
 	layer_add_child(w_layer, minute_l);
+	layer_add_child(w_layer, pommel_l_b);
 	layer_add_child(w_layer, second_l);
-	layer_add_child(w_layer, pommel_l);
+	layer_add_child(w_layer, pommel_l_r);
 	layer_add_child(w_layer, (Layer *)date_text);
 	layer_add_child(w_layer, (Layer *)month_text);
 	
@@ -213,7 +231,8 @@ void main_window_unload(Window *w) {
 	layer_destroy(hour_l);
 	layer_destroy(minute_l);
 	layer_destroy(second_l);
-	layer_destroy(pommel_l);
+	layer_destroy(pommel_l_b);
+	layer_destroy(pommel_l_r);
 	text_layer_destroy(date_text);
 	text_layer_destroy(month_text);
 }
